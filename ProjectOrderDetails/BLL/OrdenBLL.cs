@@ -72,10 +72,10 @@ namespace ProjectOrderDetails.BLL
 
             try
             {
-                contexto.Database.ExecuteSqlRaw($"Delte FROM OrdenesDetalle Where OrderId = {orden.ordenId}");
+                contexto.Database.ExecuteSqlRaw($"Delete FROM OrdenesDetalle Where OrdenId = {orden.ordenId}");
                 foreach (var auxiliar in orden.OrdenesDetalles)
                 {
-                    contexto.Database.ExecuteSqlRaw($"INSERT INTO OrdenesDetalle (orderId,productoId,producto,cantidad,costo) " +
+                    contexto.Database.ExecuteSqlRaw($"INSERT INTO OrdenesDetalle (ordenId,productoId,producto,cantidad,costo) " +
                         $"values({auxiliar.ordenId},{auxiliar.productId},{auxiliar.producto},{auxiliar.cantidad},{auxiliar.costo})");
                 }
                 ActualizarInventarioProducto(orden);
@@ -179,8 +179,11 @@ namespace ProjectOrderDetails.BLL
             foreach (var auxiliar in orden.OrdenesDetalles)
             {
                 producto = ProductosBLL.Buscar(auxiliar.productId);
-                producto.inventario -= auxiliar.cantidad;
-                ProductosBLL.Modificar(producto);
+                if(producto != null)
+                {
+                    producto.inventario -= auxiliar.cantidad;
+                    ProductosBLL.Modificar(producto);
+                }
             }
 
         }        

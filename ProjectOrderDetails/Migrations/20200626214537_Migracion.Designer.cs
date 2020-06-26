@@ -9,7 +9,7 @@ using ProjectOrderDetails.DAL;
 namespace ProjectOrderDetails.Migrations
 {
     [DbContext(typeof(Contexto))]
-    [Migration("20200626014549_Migracion")]
+    [Migration("20200626214537_Migracion")]
     partial class Migracion
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

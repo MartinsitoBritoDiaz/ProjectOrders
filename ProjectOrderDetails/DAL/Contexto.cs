@@ -16,7 +16,7 @@ namespace ProjectOrderDetails.DAL
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlite(@"Data Source= DATA\Ordenes.db");
+            optionsBuilder.UseSqlite(@"Data Source= C:\Base de datos\Ordenes.db");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
