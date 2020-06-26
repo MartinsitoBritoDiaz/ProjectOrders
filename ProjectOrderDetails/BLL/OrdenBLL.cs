@@ -126,6 +126,7 @@ namespace ProjectOrderDetails.BLL
         {
             Contexto contexto = new Contexto();
             bool paso = false;
+            Productos producto = new Productos();
 
             try
             {
@@ -133,6 +134,16 @@ namespace ProjectOrderDetails.BLL
 
                 if (orden != null)
                 {
+                    foreach (var auxiliar in orden.OrdenesDetalles)
+                    {
+                        producto = ProductosBLL.Buscar(auxiliar.productId);
+                        if (producto != null)
+                        {
+                            producto.inventario += auxiliar.cantidad;
+                            ProductosBLL.Modificar(producto);
+                        }
+                    }
+
                     contexto.Orden.Remove(orden);
                     paso = (contexto.SaveChanges() > 0);
                 }

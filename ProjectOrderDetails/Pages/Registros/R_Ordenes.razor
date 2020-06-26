@@ -141,9 +141,6 @@
 
     protected override void OnInitialized()
     {
-        cantidadProductos = 0;
-        productoSeleccionadoId = 0;
-        costoProductos = 0;
         Nuevo();
         Buscar();
         LlenarComboSuplidores();
@@ -164,11 +161,6 @@
         }
 
         return listaSuplidores;
-    }
-
-    public void ActualizarInventarioProducto()
-    {
-
     }
 
     public void BuscarCostoProducto()
@@ -205,23 +197,36 @@
 
         producto = ProductosBLL.Buscar(productoSeleccionadoId);
 
-
-        if (Orden.OrdenesDetalles.Count > 0)
-        {
-            foreach (var item in Orden.OrdenesDetalles)
+        if(productoSeleccionadoId > 0)
+            if (Orden.OrdenesDetalles.Count > 0)
             {
-                if (item.productId == producto.productoId)
+                foreach (var item in Orden.OrdenesDetalles)
                 {
-                    inventario = producto.inventario - item.cantidad;
+                    if (item.productId == producto.productoId)
+                    {
+                        inventario += producto.inventario - item.cantidad;
+                    }
                 }
             }
-        }
-        else
-        {
-            inventario = producto.inventario;
-        }
+            else
+            {
+                inventario = producto.inventario;
+            }
 
         return inventario;
+    }
+
+    public void LimiteEliminarProductos()
+    {
+        Productos producto;
+
+        foreach (var item in Orden.OrdenesDetalles)
+        {
+            producto = ProductosBLL.Buscar(item.productId);
+            producto.inventario += producto.inventario + item.cantidad;
+            ProductosBLL.Modificar(producto);
+        }
+
     }
 
     private void AgregarDetalle()
@@ -245,6 +250,9 @@
 
     public void Nuevo()
     {
+        cantidadProductos = 0;
+        productoSeleccionadoId = 0;
+        costoProductos = 0;
         Orden = new Ordenes();
     }
 
@@ -291,6 +299,7 @@
 
         if (elimino)
         {
+            LimiteEliminarProductos();
             Nuevo();
             toast.ShowSuccess("Eliminado correctamente");
         }
