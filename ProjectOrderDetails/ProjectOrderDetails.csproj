@@ -15,8 +15,4 @@
     </PackageReference>
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="Data\Ordenes.db" />
-  </ItemGroup>
-
 </Project>

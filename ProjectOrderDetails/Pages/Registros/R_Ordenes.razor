@@ -8,8 +8,8 @@
 
 <EditForm Model="Orden" OnValidSubmit="Guardar">
     <DataAnnotationsValidator />
-    <div class="card">
-        <div class="card-header text-lg-center">
+    <div class="card border-primary">
+        <div class="card-header text-lg-center bg-primary">
             <h3 style="font-family: 'Segoe UI', Tahoma,Verdana, Geneva, Tahoma, sans-serif "> Registro de ordenes</h3>
         </div>
 
@@ -21,7 +21,7 @@
                         <div class="form-group">
                             <label>Orden Id</label>
                             <div class="input-group">
-                                <InputNumber @bind-Value="Orden.ordenId" class="form-control col-4" />
+                                <InputNumber @bind-Value="Orden.ordenId" class="form-control col-2" />
                                 <div>
                                     <button type="button" class="btn btn-primary input-group-text" @onclick="Buscar">Buscar</button>
                                 </div>
@@ -166,6 +166,11 @@
         return listaSuplidores;
     }
 
+    public void ActualizarInventarioProducto()
+    {
+
+    }
+
     public void BuscarCostoProducto()
     {
         Productos producto;
@@ -192,7 +197,7 @@
         return listaProductos;
     }
 
-    public int LiminteProductos()
+    public int LimiteProductos()
     {
         int inventario = 0;
 
@@ -200,15 +205,28 @@
 
         producto = ProductosBLL.Buscar(productoSeleccionadoId);
 
-        if (producto != null)
+
+        if (Orden.OrdenesDetalles.Count > 0)
+        {
+            foreach (var item in Orden.OrdenesDetalles)
+            {
+                if (item.productId == producto.productoId)
+                {
+                    inventario = producto.inventario - item.cantidad;
+                }
+            }
+        }
+        else
+        {
             inventario = producto.inventario;
+        }
 
         return inventario;
     }
 
     private void AgregarDetalle()
     {
-        if(cantidadProductos > 0 && cantidadProductos <= LiminteProductos())
+        if(cantidadProductos > 0 && cantidadProductos <= LimiteProductos())
         {
             Orden.OrdenesDetalles.Add(new OrdenesDetalle
             {
@@ -247,15 +265,22 @@
     {
         bool guardo;
 
-        guardo = OrdenBLL.Guardar(Orden);
-
-        if (guardo)
+        if(Orden.OrdenesDetalles.Count > 0)
         {
-            Nuevo();
-            toast.ShowSuccess("Guardo correctamente");
+            guardo = OrdenBLL.Guardar(Orden);
+
+            if (guardo)
+            {
+                Nuevo();
+                toast.ShowSuccess("Guardo correctamente");
+            }
+            else
+                toast.ShowError("No fue posible guardar");
         }
         else
-            toast.ShowError("No fue posible guardar");
+        {
+            toast.ShowWarning("Debe agregar productos al detalle");
+        }
     }
 
     public void Eliminar()

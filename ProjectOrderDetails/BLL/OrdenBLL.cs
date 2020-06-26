@@ -48,6 +48,7 @@ namespace ProjectOrderDetails.BLL
 
             try
             {
+                ActualizarInventarioProducto(orden);
                 contexto.Orden.Add(orden);
                 paso = (contexto.SaveChanges() > 0);
             }
@@ -77,6 +78,7 @@ namespace ProjectOrderDetails.BLL
                     contexto.Database.ExecuteSqlRaw($"INSERT INTO OrdenesDetalle (orderId,productoId,producto,cantidad,costo) " +
                         $"values({auxiliar.ordenId},{auxiliar.productId},{auxiliar.producto},{auxiliar.cantidad},{auxiliar.costo})");
                 }
+                ActualizarInventarioProducto(orden);
                 contexto.Entry(orden).State = EntityState.Modified;
                 paso = (contexto.SaveChanges() > 0);
             }
@@ -169,7 +171,19 @@ namespace ProjectOrderDetails.BLL
 
             return listaOrdenes;
         }
-            
+          
+        public static void ActualizarInventarioProducto(Ordenes orden)
+        {
+            Productos producto = new Productos();
+
+            foreach (var auxiliar in orden.OrdenesDetalles)
+            {
+                producto = ProductosBLL.Buscar(auxiliar.productId);
+                producto.inventario -= auxiliar.cantidad;
+                ProductosBLL.Modificar(producto);
+            }
+
+        }        
        
     }
 }
