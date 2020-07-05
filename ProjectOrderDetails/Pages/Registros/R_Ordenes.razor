@@ -56,7 +56,7 @@
                     </div>
 
                     <div class="form-row">
-                        <div class="form-group col-4">
+                        <div class="form-group col-3">
                             <label>Productos</label>
                             <InputSelectNumber class="form-control" @bind-Value="productoSeleccionadoId" @onfocusout="BuscarCostoProducto">
                                 @foreach (var auxiliar in LlenarComboProductos())
@@ -67,17 +67,23 @@
                         </div>
 
                         @*Cantidad*@
-                        <div class="form-group">
+                        <div class="form-group col-3">
                             <label>Cantidad</label>
-                            <InputNumber @bind-Value="cantidadProductos" class="form-control" />
+                            <InputNumber @bind-Value="cantidadProductos" class="form-control" @onfocusout="CalcularImporte" />
                         </div>
 
-                        <div class="form-group col-md-4">
+                        @*Costo*@
+                        <div class="form-group col-3">
                             <label>Costo</label>
+                            <InputNumber @bind-Value="costoProductos" class="form-control" readonly/>
+                        </div>
+
+                        <div class="form-group col-md-3">
+                            <label>Importe</label>
                             <div class="input-group">
-                                <InputNumber @bind-Value="costoProductos" class="form-control" readonly/>
+                                <InputNumber @bind-Value="importe" class="form-control" readonly />
                                 <div class="input-group-append">
-                                    <button type="button" class="btn btn-primary input-group-text" @onclick="AgregarDetalle" @onfocusout="CalcularMonto">
+                                    <button type="button" class="btn btn-primary input-group-text" @onclick="AgregarDetalle">
                                         <i class="oi oi-plus" aria-hidden="true" />
                                     </button>
                                 </div>
@@ -92,6 +98,7 @@
                                 <th scope="col">Producto</th>
                                 <th scope="col">Cantidad</th>
                                 <th scope="col">Costo</th>
+                                <th scope="col">Importe</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -102,6 +109,7 @@
                                     <td>@auxiliar.producto</td>
                                     <td>@auxiliar.cantidad</td>
                                     <td>@auxiliar.costo</td>
+                                    <td>@(CalcularImporteTabla(auxiliar.cantidad,auxiliar.costo))</td>
                                 </tr>
                             }
                         </tbody>
@@ -136,6 +144,7 @@
     public int cantidadProductos { get; set; }
     public int productoSeleccionadoId { get; set; }
     public double costoProductos { get; set; }
+    public double importe { get; set; }
 
     private Ordenes Orden = new Ordenes();
 
@@ -197,7 +206,7 @@
 
         producto = ProductosBLL.Buscar(productoSeleccionadoId);
 
-        if(productoSeleccionadoId > 0)
+        if (productoSeleccionadoId > 0)
             if (Orden.OrdenesDetalles.Count > 0)
             {
                 foreach (var item in Orden.OrdenesDetalles)
@@ -231,7 +240,7 @@
 
     private void AgregarDetalle()
     {
-        if(cantidadProductos > 0 && cantidadProductos <= LimiteProductos())
+        if (cantidadProductos > 0 && cantidadProductos <= LimiteProductos())
         {
             Orden.OrdenesDetalles.Add(new OrdenesDetalle
             {
@@ -241,6 +250,8 @@
                 cantidad = cantidadProductos,
                 costo = costoProductos
             });
+
+            CalcularMonto();
         }
         else
         {
@@ -253,6 +264,7 @@
         cantidadProductos = 0;
         productoSeleccionadoId = 0;
         costoProductos = 0;
+        importe = 0;
         Orden = new Ordenes();
     }
 
@@ -263,8 +275,10 @@
             var encontrado = OrdenBLL.Buscar(Orden.ordenId);
 
             if (encontrado != null)
+            {
                 this.Orden = encontrado;
-            else
+            }
+        else
                 toast.ShowWarning("No encontrado");
         }
     }
@@ -273,7 +287,7 @@
     {
         bool guardo;
 
-        if(Orden.OrdenesDetalles.Count > 0)
+        if (Orden.OrdenesDetalles.Count > 0)
         {
             guardo = OrdenBLL.Guardar(Orden);
 
@@ -312,14 +326,22 @@
         double costo = 0;
         Productos producto;
 
-        producto =  ProductosBLL.Buscar(productoSeleccionadoId);
+        producto = ProductosBLL.Buscar(productoSeleccionadoId);
 
         if (producto != null)
             costo = producto.costo;
 
-        foreach (var auxiliar in Orden.OrdenesDetalles)
-        {
-            Orden.monto += costo * cantidadProductos;
-        }
+        Orden.monto += (costo * cantidadProductos);
+        
+    }
+
+    public double CalcularImporteTabla(int cantidad, double costo)
+    {
+        return (costo * cantidad);
+    }
+
+    public void CalcularImporte()
+    {
+        importe = (cantidadProductos * costoProductos);
     }
 }
